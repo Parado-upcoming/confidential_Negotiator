@@ -81,4 +81,64 @@ contract ConfidentialNegotiationTest is FhevmTest {
         vm.expectRevert(ConfidentialNegotiation.WrongParty.selector);
         negotiation.submitCeiling(sessionId, encCeiling, proof);
     }
+
+    function test_cancelSession_byPartyA() public {
+        uint256 sessionId = _createSession();
+
+        vm.prank(employer);
+        negotiation.cancelSession(sessionId);
+
+        (,,,,, bool cancelled) = negotiation.getSession(sessionId);
+        assertTrue(cancelled);
+    }
+
+    function test_cancelSession_byPartyB() public {
+        uint256 sessionId = _createSession();
+
+        vm.prank(candidate);
+        negotiation.cancelSession(sessionId);
+
+        (,,,,, bool cancelled) = negotiation.getSession(sessionId);
+        assertTrue(cancelled);
+    }
+
+    function test_revert_cancelByNonParty() public {
+        uint256 sessionId = _createSession();
+        address stranger = vm.addr(0xBAD);
+
+        vm.prank(stranger);
+        vm.expectRevert(ConfidentialNegotiation.NotAParty.selector);
+        negotiation.cancelSession(sessionId);
+    }
+
+    function test_revert_submitAfterCancelled() public {
+        uint256 sessionId = _createSession();
+
+        vm.prank(employer);
+        negotiation.cancelSession(sessionId);
+
+        (externalEuint64 encCeiling, bytes memory proof) = encryptUint64(1, employer, negotiationAddress);
+        vm.prank(employer);
+        vm.expectRevert(ConfidentialNegotiation.SessionIsCancelled.selector);
+        negotiation.submitCeiling(sessionId, encCeiling, proof);
+    }
+
+    function test_revert_cancelAfterRevealed() public {
+        uint256 sessionId = _createSession();
+
+        (externalEuint64 encCeiling, bytes memory ceilingProof) = encryptUint64(120_000, employer, negotiationAddress);
+        vm.prank(employer);
+        negotiation.submitCeiling(sessionId, encCeiling, ceilingProof);
+
+        (externalEuint64 encFloor, bytes memory floorProof) = encryptUint64(100_000, candidate, negotiationAddress);
+        vm.prank(candidate);
+        negotiation.submitFloor(sessionId, encFloor, floorProof);
+
+        vm.prank(employer);
+        negotiation.reveal(sessionId);
+
+        vm.prank(employer);
+        vm.expectRevert(ConfidentialNegotiation.AlreadyRevealed.selector);
+        negotiation.cancelSession(sessionId);
+    }
 }

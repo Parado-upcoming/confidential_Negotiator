@@ -45,15 +45,18 @@ export default function SessionDetail() {
 function SessionDetailInner({ sessionId }: { sessionId: bigint }) {
   const {
     negotiation,
+    isCancelled,
     isLoadingSession,
     isSubmitting,
     isRevealing,
+    isCancelling,
     isAllowing,
     isDecrypting,
     canStartDecrypt,
     message,
     submitNumber,
     reveal,
+    cancelSession,
     startDecrypt,
     result,
   } = useNegotiationSession(sessionId);
@@ -77,23 +80,32 @@ function SessionDetailInner({ sessionId }: { sessionId: bigint }) {
           ← All negotiations
         </Link>
 
-        <div className="mt-6 flex items-center justify-between gap-4">
+        <div className="mt-6 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="text-xs uppercase tracking-wider text-muted-foreground">With</div>
             <div className="mt-1 truncate font-mono text-lg font-medium">{truncate(negotiation.counterparty)}</div>
           </div>
+          {!isCancelled && status !== "revealed" ? (
+            <CancelAction isCancelling={isCancelling} onCancel={cancelSession} />
+          ) : null}
         </div>
 
         <div className="mt-10">
-          {status === "awaiting_you" ? (
+          {isCancelled ? <CancelledCard /> : null}
+
+          {!isCancelled && status === "awaiting_you" ? (
             <SubmitCard role={negotiation.role} isSubmitting={isSubmitting} onSubmit={submitNumber} />
           ) : null}
 
-          {status === "awaiting_counterparty" ? <WaitingCard address={negotiation.counterparty} /> : null}
+          {!isCancelled && status === "awaiting_counterparty" ? (
+            <WaitingCard address={negotiation.counterparty} />
+          ) : null}
 
-          {status === "ready_to_reveal" ? <ReadyToRevealCard isRevealing={isRevealing} onReveal={reveal} /> : null}
+          {!isCancelled && status === "ready_to_reveal" ? (
+            <ReadyToRevealCard isRevealing={isRevealing} onReveal={reveal} />
+          ) : null}
 
-          {status === "revealed" && !result ? (
+          {!isCancelled && status === "revealed" && !result ? (
             <DecryptCard isBusy={isAllowing || isDecrypting} canStart={canStartDecrypt} onDecrypt={startDecrypt} />
           ) : null}
 
@@ -105,6 +117,48 @@ function SessionDetailInner({ sessionId }: { sessionId: bigint }) {
         <TrustLine />
       </div>
     </AppShell>
+  );
+}
+
+function CancelAction({ isCancelling, onCancel }: { isCancelling: boolean; onCancel: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <div className="flex shrink-0 items-center gap-2 pt-1 text-xs">
+        <span className="text-muted-foreground">Cancel?</span>
+        <button
+          onClick={onCancel}
+          disabled={isCancelling}
+          className="font-medium text-foreground hover:underline disabled:opacity-30"
+        >
+          {isCancelling ? "Cancelling…" : "Yes, cancel"}
+        </button>
+        <button onClick={() => setConfirming(false)} className="text-muted-foreground hover:text-foreground">
+          Never mind
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setConfirming(true)}
+      className="shrink-0 pt-1 text-xs text-muted-foreground hover:text-foreground"
+    >
+      Cancel negotiation
+    </button>
+  );
+}
+
+function CancelledCard() {
+  return (
+    <div className="rounded-3xl border border-dashed border-border bg-card/50 p-10 text-center shadow-sm sm:p-14">
+      <h2 className="text-xl font-medium tracking-tight sm:text-2xl">Negotiation cancelled</h2>
+      <p className="mx-auto mt-3 max-w-sm text-sm text-muted-foreground">
+        This negotiation was cancelled and can no longer be submitted to or revealed.
+      </p>
+    </div>
   );
 }
 

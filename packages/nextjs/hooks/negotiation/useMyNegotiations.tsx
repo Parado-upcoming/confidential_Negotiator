@@ -6,7 +6,7 @@ import { ConfidentialNegotiation } from "~~/contracts/ConfidentialNegotiation";
 import { deploymentFor } from "~~/utils/contract";
 import { type Negotiation } from "~~/utils/negotiations";
 
-type SessionResult = readonly [`0x${string}`, `0x${string}`, boolean, boolean, boolean];
+type SessionResult = readonly [`0x${string}`, `0x${string}`, boolean, boolean, boolean, boolean];
 
 /** Lists every session the connected wallet is a party to. The contract has
  * no enumerable "sessions by user" index, so this reads `nextSessionId` and
@@ -46,7 +46,8 @@ export function useMyNegotiations() {
     const list: Negotiation[] = [];
     results.forEach((r, i) => {
       if (r.status !== "success" || !r.result) return;
-      const [partyA, partyB, ceilingSet, floorSet, revealed] = r.result as SessionResult;
+      const [partyA, partyB, ceilingSet, floorSet, revealed, cancelled] = r.result as SessionResult;
+      if (cancelled) return;
       const isA = partyA.toLowerCase() === address.toLowerCase();
       const isB = partyB.toLowerCase() === address.toLowerCase();
       if (!isA && !isB) return;

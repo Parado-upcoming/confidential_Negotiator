@@ -10,8 +10,21 @@ import type { ContractDeployment } from "~~/utils/contract";
 
 const REMOTE = {
   11155111: {
-    address: "0x8aBDCF4BAf506D23A02e1c1338A88510523efc8A",
+    address: "0xfbdBA692809ab7ebf90Ca20069a6a42e078faB2c",
     abi: [
+      {
+        type: "function",
+        name: "cancelSession",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        outputs: [],
+        stateMutability: "nonpayable",
+      },
       {
         type: "function",
         name: "confidentialProtocolId",
@@ -96,6 +109,11 @@ const REMOTE = {
           },
           {
             name: "revealed",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "cancelled",
             type: "bool",
             internalType: "bool",
           },
@@ -234,6 +252,19 @@ const REMOTE = {
       },
       {
         type: "event",
+        name: "SessionCancelled",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            indexed: true,
+            internalType: "uint256",
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: "event",
         name: "SessionCreated",
         inputs: [
           {
@@ -295,6 +326,11 @@ const REMOTE = {
       },
       {
         type: "error",
+        name: "SessionIsCancelled",
+        inputs: [],
+      },
+      {
+        type: "error",
         name: "WrongParty",
         inputs: [],
       },
@@ -304,7 +340,7 @@ const REMOTE = {
         inputs: [],
       },
     ],
-    deployedOnBlock: 11213714,
+    deployedOnBlock: 11215114,
   },
 } as const;
 

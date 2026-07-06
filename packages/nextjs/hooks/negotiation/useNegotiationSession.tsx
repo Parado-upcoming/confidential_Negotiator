@@ -8,7 +8,7 @@ import { ConfidentialNegotiation } from "~~/contracts/ConfidentialNegotiation";
 import { deploymentFor } from "~~/utils/contract";
 import { type Negotiation, type Role } from "~~/utils/negotiations";
 
-type SessionResult = readonly [`0x${string}`, `0x${string}`, boolean, boolean, boolean];
+type SessionResult = readonly [`0x${string}`, `0x${string}`, boolean, boolean, boolean, boolean];
 
 /** Drives a single negotiation session: reads on-chain state, submits the
  * caller's encrypted ceiling/floor (role-aware), triggers reveal(), and — once
@@ -24,6 +24,7 @@ export function useNegotiationSession(sessionId: bigint) {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const sessionRead = useReadContract({
     address: hasContract ? deployment!.address : undefined,
@@ -34,9 +35,10 @@ export function useNegotiationSession(sessionId: bigint) {
   });
 
   const session = sessionRead.data as SessionResult | undefined;
-  const [partyA, partyB, ceilingSet, floorSet, revealed] = session ?? [
+  const [partyA, partyB, ceilingSet, floorSet, revealed, cancelled] = session ?? [
     "0x0000000000000000000000000000000000000000",
     "0x0000000000000000000000000000000000000000",
+    false,
     false,
     false,
     false,
@@ -114,6 +116,26 @@ export function useNegotiationSession(sessionId: bigint) {
     }
   }, [hasContract, deployment, writeContractAsync, sessionId, sessionRead]);
 
+  const cancelSession = useCallback(async () => {
+    if (!hasContract) return;
+    setIsCancelling(true);
+    try {
+      setMessage("Cancelling negotiation...");
+      await writeContractAsync({
+        address: deployment!.address,
+        abi: deployment!.abi,
+        functionName: "cancelSession",
+        args: [sessionId],
+      });
+      setMessage("Cancelled.");
+      sessionRead.refetch();
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      setIsCancelling(false);
+    }
+  }, [hasContract, deployment, writeContractAsync, sessionId, sessionRead]);
+
   // Outcome decryption — only enabled once reveal() has landed on-chain.
   const dealExistsRead = useReadContract({
     address: hasContract ? deployment!.address : undefined,
@@ -171,15 +193,18 @@ export function useNegotiationSession(sessionId: bigint) {
 
   return {
     negotiation,
+    isCancelled: cancelled,
     isLoadingSession: sessionRead.isFetching && !session,
     isSubmitting,
     isRevealing,
+    isCancelling,
     isAllowing,
     isDecrypting: decrypt.isFetching,
     canStartDecrypt: revealed && !result,
     message,
     submitNumber,
     reveal,
+    cancelSession,
     startDecrypt,
     result,
   };

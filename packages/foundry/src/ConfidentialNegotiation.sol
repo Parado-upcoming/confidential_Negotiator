@@ -18,6 +18,7 @@ contract ConfidentialNegotiation is ZamaEthereumConfig {
         bool ceilingSet;
         bool floorSet;
         bool revealed;
+        bool cancelled;
         ebool dealExists;
         euint64 suggestedValue;
     }
@@ -29,12 +30,14 @@ contract ConfidentialNegotiation is ZamaEthereumConfig {
     event CeilingSubmitted(uint256 indexed sessionId);
     event FloorSubmitted(uint256 indexed sessionId);
     event Revealed(uint256 indexed sessionId);
+    event SessionCancelled(uint256 indexed sessionId);
 
     error NotAParty();
     error WrongParty();
     error AlreadySubmitted();
     error NotReadyToReveal();
     error AlreadyRevealed();
+    error SessionIsCancelled();
 
     /// @notice Starts a new negotiation between the caller (partyA) and `partyB`.
     function createSession(address partyB) external returns (uint256 sessionId) {
@@ -49,6 +52,7 @@ contract ConfidentialNegotiation is ZamaEthereumConfig {
     function submitCeiling(uint256 sessionId, externalEuint64 value, bytes calldata inputProof) external {
         Session storage s = _sessions[sessionId];
         if (msg.sender != s.partyA) revert WrongParty();
+        if (s.cancelled) revert SessionIsCancelled();
         if (s.ceilingSet) revert AlreadySubmitted();
 
         s.ceiling = FHE.fromExternal(value, inputProof);
@@ -61,6 +65,7 @@ contract ConfidentialNegotiation is ZamaEthereumConfig {
     function submitFloor(uint256 sessionId, externalEuint64 value, bytes calldata inputProof) external {
         Session storage s = _sessions[sessionId];
         if (msg.sender != s.partyB) revert WrongParty();
+        if (s.cancelled) revert SessionIsCancelled();
         if (s.floorSet) revert AlreadySubmitted();
 
         s.floor = FHE.fromExternal(value, inputProof);
@@ -74,6 +79,7 @@ contract ConfidentialNegotiation is ZamaEthereumConfig {
     function reveal(uint256 sessionId) external {
         Session storage s = _sessions[sessionId];
         if (msg.sender != s.partyA && msg.sender != s.partyB) revert NotAParty();
+        if (s.cancelled) revert SessionIsCancelled();
         if (!s.ceilingSet || !s.floorSet) revert NotReadyToReveal();
         if (s.revealed) revert AlreadyRevealed();
 
@@ -98,13 +104,25 @@ contract ConfidentialNegotiation is ZamaEthereumConfig {
         emit Revealed(sessionId);
     }
 
+    /// @notice Either party can cancel a session any time before it's revealed.
+    /// Cancelled sessions can no longer accept submissions or be revealed.
+    function cancelSession(uint256 sessionId) external {
+        Session storage s = _sessions[sessionId];
+        if (msg.sender != s.partyA && msg.sender != s.partyB) revert NotAParty();
+        if (s.revealed) revert AlreadyRevealed();
+        if (s.cancelled) revert SessionIsCancelled();
+
+        s.cancelled = true;
+        emit SessionCancelled(sessionId);
+    }
+
     function getSession(uint256 sessionId)
         external
         view
-        returns (address partyA, address partyB, bool ceilingSet, bool floorSet, bool revealed)
+        returns (address partyA, address partyB, bool ceilingSet, bool floorSet, bool revealed, bool cancelled)
     {
         Session storage s = _sessions[sessionId];
-        return (s.partyA, s.partyB, s.ceilingSet, s.floorSet, s.revealed);
+        return (s.partyA, s.partyB, s.ceilingSet, s.floorSet, s.revealed, s.cancelled);
     }
 
     function getDealExists(uint256 sessionId) external view returns (ebool) {
