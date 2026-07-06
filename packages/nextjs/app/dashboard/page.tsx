@@ -17,6 +17,12 @@ export default function Dashboard() {
     if (!isConnected) router.push("/");
   }, [isConnected, router]);
 
+  const liveCount = negotiations.filter(n => getStatus(n) !== "revealed").length;
+  const needsActionCount = negotiations.filter(n => {
+    const s = getStatus(n);
+    return s === "awaiting_you" || s === "ready_to_reveal";
+  }).length;
+
   return (
     <AppShell>
       <div className="animate-fade-up mt-6 sm:mt-10">
@@ -24,6 +30,19 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your negotiations</h1>
             <p className="mt-2 text-sm text-muted-foreground">Private by design. Only outcomes are ever shared.</p>
+            {negotiations.length > 0 ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {liveCount} live negotiation{liveCount === 1 ? "" : "s"}
+                </span>
+                {needsActionCount > 0 ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-foreground bg-foreground px-2.5 py-1 text-[11px] font-medium text-background">
+                    <span className="h-1.5 w-1.5 rounded-full bg-background" />
+                    {needsActionCount} need{needsActionCount === 1 ? "s" : ""} your action
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <Link
             href="/new"
