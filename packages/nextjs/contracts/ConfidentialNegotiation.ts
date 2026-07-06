@@ -8,7 +8,305 @@
 import { ConfidentialNegotiation as ConfidentialNegotiation_LOCAL } from "./ConfidentialNegotiation.local";
 import type { ContractDeployment } from "~~/utils/contract";
 
-const REMOTE = {} as const;
+const REMOTE = {
+  11155111: {
+    address: "0x8aBDCF4BAf506D23A02e1c1338A88510523efc8A",
+    abi: [
+      {
+        type: "function",
+        name: "confidentialProtocolId",
+        inputs: [],
+        outputs: [
+          {
+            name: "",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        stateMutability: "view",
+      },
+      {
+        type: "function",
+        name: "createSession",
+        inputs: [
+          {
+            name: "partyB",
+            type: "address",
+            internalType: "address",
+          },
+        ],
+        outputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        stateMutability: "nonpayable",
+      },
+      {
+        type: "function",
+        name: "getDealExists",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        outputs: [
+          {
+            name: "",
+            type: "bytes32",
+            internalType: "ebool",
+          },
+        ],
+        stateMutability: "view",
+      },
+      {
+        type: "function",
+        name: "getSession",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        outputs: [
+          {
+            name: "partyA",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "partyB",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "ceilingSet",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "floorSet",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "revealed",
+            type: "bool",
+            internalType: "bool",
+          },
+        ],
+        stateMutability: "view",
+      },
+      {
+        type: "function",
+        name: "getSuggestedValue",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        outputs: [
+          {
+            name: "",
+            type: "bytes32",
+            internalType: "euint64",
+          },
+        ],
+        stateMutability: "view",
+      },
+      {
+        type: "function",
+        name: "nextSessionId",
+        inputs: [],
+        outputs: [
+          {
+            name: "",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        stateMutability: "view",
+      },
+      {
+        type: "function",
+        name: "reveal",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+        outputs: [],
+        stateMutability: "nonpayable",
+      },
+      {
+        type: "function",
+        name: "submitCeiling",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "bytes32",
+            internalType: "externalEuint64",
+          },
+          {
+            name: "inputProof",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+        outputs: [],
+        stateMutability: "nonpayable",
+      },
+      {
+        type: "function",
+        name: "submitFloor",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "bytes32",
+            internalType: "externalEuint64",
+          },
+          {
+            name: "inputProof",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+        outputs: [],
+        stateMutability: "nonpayable",
+      },
+      {
+        type: "event",
+        name: "CeilingSubmitted",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            indexed: true,
+            internalType: "uint256",
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: "event",
+        name: "FloorSubmitted",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            indexed: true,
+            internalType: "uint256",
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: "event",
+        name: "Revealed",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            indexed: true,
+            internalType: "uint256",
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: "event",
+        name: "SessionCreated",
+        inputs: [
+          {
+            name: "sessionId",
+            type: "uint256",
+            indexed: true,
+            internalType: "uint256",
+          },
+          {
+            name: "partyA",
+            type: "address",
+            indexed: true,
+            internalType: "address",
+          },
+          {
+            name: "partyB",
+            type: "address",
+            indexed: true,
+            internalType: "address",
+          },
+        ],
+        anonymous: false,
+      },
+      {
+        type: "error",
+        name: "AlreadyRevealed",
+        inputs: [],
+      },
+      {
+        type: "error",
+        name: "AlreadySubmitted",
+        inputs: [],
+      },
+      {
+        type: "error",
+        name: "NotAParty",
+        inputs: [],
+      },
+      {
+        type: "error",
+        name: "NotReadyToReveal",
+        inputs: [],
+      },
+      {
+        type: "error",
+        name: "SenderNotAllowedToUseHandle",
+        inputs: [
+          {
+            name: "handle",
+            type: "bytes32",
+            internalType: "bytes32",
+          },
+          {
+            name: "sender",
+            type: "address",
+            internalType: "address",
+          },
+        ],
+      },
+      {
+        type: "error",
+        name: "WrongParty",
+        inputs: [],
+      },
+      {
+        type: "error",
+        name: "ZamaProtocolUnsupported",
+        inputs: [],
+      },
+    ],
+    deployedOnBlock: 11213714,
+  },
+} as const;
 
 export const ConfidentialNegotiation = {
   ...REMOTE,
