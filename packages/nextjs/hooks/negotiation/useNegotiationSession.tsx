@@ -82,7 +82,6 @@ export function useNegotiationSession(sessionId: bigint) {
           abi: deployment!.abi,
           functionName: role === "initiator" ? "submitCeiling" : "submitFloor",
           args: [sessionId, bytesToHex(enc.handles[0]!), bytesToHex(enc.inputProof)],
-          gas: 15_000_000n,
         });
         setMessage("Submitted privately.");
         sessionRead.refetch();
@@ -105,7 +104,6 @@ export function useNegotiationSession(sessionId: bigint) {
         abi: deployment!.abi,
         functionName: "reveal",
         args: [sessionId],
-        gas: 15_000_000n,
       });
       setMessage("Revealed. Sign to decrypt the result.");
       sessionRead.refetch();

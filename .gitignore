@@ -21,3 +21,4 @@ packages/nextjs/contracts/*.local.ts
 CLAUDE.md
 .claude
 .vercel
+.test-wallets.local
