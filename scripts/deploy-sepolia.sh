@@ -33,7 +33,7 @@ FORGE_ARGS=(
 if [[ -n "${ETHERSCAN_API_KEY:-}" ]]; then
   FORGE_ARGS+=(--verify --etherscan-api-key "$ETHERSCAN_API_KEY")
 else
-  echo "note: ETHERSCAN_API_KEY not set — skipping verification"
+  echo "note: ETHERSCAN_API_KEY not set, skipping verification"
 fi
 
 cd "$FOUNDRY_DIR"

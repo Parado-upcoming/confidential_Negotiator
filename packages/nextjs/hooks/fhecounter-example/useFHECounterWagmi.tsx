@@ -12,7 +12,7 @@ import { deploymentFor } from "~~/utils/contract";
  * FHE Counter hook using @zama-fhe/react-sdk v3 + wagmi.
  *
  * - Reads the encrypted counter via wagmi's useReadContract.
- * - Decrypts the handle on-demand via useUserDecrypt (query-based — handles
+ * - Decrypts the handle on-demand via useUserDecrypt (query-based, handles
  *   keypair generation, EIP-712 signing, and caching internally).
  * - Encrypts inputs via useEncrypt and writes increment/decrement via
  *   useWriteContract.

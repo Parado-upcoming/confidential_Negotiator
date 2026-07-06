@@ -43,7 +43,7 @@ export class WagmiSigner implements GenericSigner {
 
   async signTypedData(typedData: EIP712TypedData): Promise<Hex> {
     // wagmi's signTypedData derives EIP712Domain from `domain`; passing it via
-    // `types` triggers "Ambiguous primary type" — strip it here.
+    // `types` triggers "Ambiguous primary type", so strip it here.
     const sigTypes = { ...typedData.types };
     delete (sigTypes as Record<string, unknown>).EIP712Domain;
     return signTypedData(this.config, {

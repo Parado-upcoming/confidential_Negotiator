@@ -8,7 +8,7 @@
 set -euo pipefail
 
 RPC_URL="${RPC_URL:-http://127.0.0.1:8545}"
-# Anvil's first default account — deterministic, same on every run.
+# Anvil's first default account, deterministic and the same on every run.
 ANVIL_PK="${PRIVATE_KEY:-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,7 +24,7 @@ echo "▸ Deploying ConfidentialNegotiation"
 cd "$FOUNDRY_DIR"
 # foundry.toml references SEPOLIA_RPC_URL / ETHERSCAN_API_KEY under
 # [rpc_endpoints] / [etherscan]. forge 1.x refuses to load the config if
-# those vars are unset, even on a localhost deploy that never touches them —
+# those vars are unset, even on a localhost deploy that never touches them,
 # so stub them here so a fresh checkout doesn't silently fail.
 : "${SEPOLIA_RPC_URL:=unset}"
 : "${ETHERSCAN_API_KEY:=unset}"

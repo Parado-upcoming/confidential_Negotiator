@@ -2,7 +2,7 @@
 # Start anvil + FHEVM cleartext host stack + ConfidentialNegotiation in one command.
 #
 # Flow (2 terminals):
-#   pnpm chain   # this script — anvil + FHEVM host + ConfidentialNegotiation
+#   pnpm chain   # this script: anvil + FHEVM host + ConfidentialNegotiation
 #   pnpm start   # frontend
 #
 # To redeploy ConfidentialNegotiation without restarting anvil, run
@@ -66,7 +66,7 @@ kill -0 "$ANVIL_PID" 2>/dev/null \
 
 # Redeploying the FHEVM host stack (ACL/Executor/KMSVerifier/InputVerifier) on
 # top of already-restored state resets its internal registries even though the
-# contracts land at the same fixed addresses — any input proof a client already
+# contracts land at the same fixed addresses, so any input proof a client already
 # has cached (or any ciphertext handle registered under the previous instance)
 # stops verifying afterwards. Confirmed by trace: a submitFloor call reverted
 # deep inside InputVerifier.verifyInput after a chain restart that re-ran this
@@ -74,19 +74,19 @@ kill -0 "$ANVIL_PID" 2>/dev/null \
 ACL_ADDR=0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D
 if [[ "$(cast code "$ACL_ADDR" --rpc-url "$RPC_URL")" == "0x" ]]; then
   echo "deploying FHEVM cleartext host stack..."
-  # Unset any chain override inherited from the calling shell — cast reads
+  # Unset any chain override inherited from the calling shell, since cast reads
   # CHAIN (and legacy FOUNDRY_CHAIN / DAPP_CHAIN) and would fail if set to an
   # invalid value such as "testnet".
   (unset CHAIN FOUNDRY_CHAIN DAPP_CHAIN; cd "$FORGE_FHEVM_DIR" && ./deploy-local.sh --rpc-url "$RPC_URL")
 else
-  echo "FHEVM host stack already live (restored from state) — skipping redeploy"
+  echo "FHEVM host stack already live (restored from state), skipping redeploy"
 fi
 
 # wagmi's useReadContracts batches reads via Multicall3, which is deployed at
 # this canonical address on every real network (mainnet, Sepolia, ...) but not
 # on a bare anvil instance. Without it, every multicall-based read in the
 # frontend (e.g. listing negotiations) silently fails. Deploy it once via the
-# well-known pre-signed transaction (github.com/mds1/multicall3) — idempotent,
+# well-known pre-signed transaction (github.com/mds1/multicall3). Idempotent,
 # and persists in --dump-state once deployed.
 MULTICALL3_ADDR=0xcA11bde05977b3631167028862bE2a173976CA11
 if [[ "$(cast code "$MULTICALL3_ADDR" --rpc-url "$RPC_URL")" == "0x" ]]; then
@@ -108,7 +108,7 @@ if [[ -f "$LATEST_BROADCAST" ]]; then
 fi
 
 if [[ -n "$EXISTING_ADDR" ]] && [[ "$(cast code "$EXISTING_ADDR" --rpc-url "$RPC_URL")" != "0x" ]]; then
-  echo "ConfidentialNegotiation already live at $EXISTING_ADDR (restored from state) — skipping redeploy"
+  echo "ConfidentialNegotiation already live at $EXISTING_ADDR (restored from state), skipping redeploy"
   (cd "$REPO_ROOT" && pnpm generate)
 else
   echo "deploying ConfidentialNegotiation..."

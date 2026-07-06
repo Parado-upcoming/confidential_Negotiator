@@ -209,7 +209,7 @@ function SubmitCard({
         <span className="mt-0.5 shrink-0">
           <LockGlyph />
         </span>
-        <p>Encrypted on your device before it&apos;s sent. No one — including us — can see this number.</p>
+        <p>Encrypted on your device before it&apos;s sent. No one, including us, can see this number.</p>
       </div>
 
       <button
@@ -242,7 +242,7 @@ function ReadyToRevealCard({ isRevealing, onReveal }: { isRevealing: boolean; on
     <div className="rounded-3xl border border-border bg-card p-10 text-center shadow-sm sm:p-14">
       <h2 className="text-xl font-medium tracking-tight sm:text-2xl">Both numbers are in</h2>
       <p className="mx-auto mt-3 max-w-sm text-sm text-muted-foreground">
-        The comparison is ready. Reveal the outcome — never either number.
+        The comparison is ready. Reveal the outcome, never either number.
       </p>
       <button
         onClick={onReveal}

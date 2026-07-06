@@ -5,7 +5,7 @@ import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/helper/getMetadata";
 
 export const metadata = getMetadata({
-  title: "Confidential Negotiation — Agree on a number. Reveal nothing else.",
+  title: "Confidential Negotiation: Agree on a number. Reveal nothing else.",
   description:
     "Two people agree on a number without either one ever revealing it. Encrypted end-to-end, private by design.",
 });

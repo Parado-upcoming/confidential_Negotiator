@@ -12,11 +12,11 @@ import { Toaster } from "react-hot-toast";
 import { WagmiProvider, useChainId } from "wagmi";
 import { BlockieAvatar } from "~~/components/helper";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
-// Swap to `@zama-fhe/react-sdk/wagmi` once a patched stable ships — the fix
+// Swap to `@zama-fhe/react-sdk/wagmi` once a patched stable ships. The fix
 // is already in the alpha track (≥ 3.0.0-alpha.16). See wagmiSigner.ts.
 import { WagmiSigner } from "~~/services/web3/wagmiSigner";
 
-// Module-scoped — the signer, keypair store and session store are chain-agnostic
+// Module-scoped: the signer, keypair store and session store are chain-agnostic
 // and there's no reason to rebuild them on chain change. IndexedDBStorage lets
 // the keypair + EIP-712 session survive page reloads, matching Zama's hosted
 // app patterns.

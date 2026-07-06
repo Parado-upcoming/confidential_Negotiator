@@ -11,8 +11,8 @@ import { type Negotiation, type Role } from "~~/utils/negotiations";
 type SessionResult = readonly [`0x${string}`, `0x${string}`, boolean, boolean, boolean, boolean];
 
 /** Drives a single negotiation session: reads on-chain state, submits the
- * caller's encrypted ceiling/floor (role-aware), triggers reveal(), and — once
- * revealed — decrypts the outcome via the same EIP-712 user-decrypt flow used
+ * caller's encrypted ceiling/floor (role-aware), triggers reveal(), and once
+ * revealed, decrypts the outcome via the same EIP-712 user-decrypt flow used
  * for ERC-7984 balances. Neither party's submitted number is ever read back;
  * only the boolean/aggregate outcome ciphertexts are decrypted. */
 export function useNegotiationSession(sessionId: bigint) {
@@ -136,7 +136,7 @@ export function useNegotiationSession(sessionId: bigint) {
     }
   }, [hasContract, deployment, writeContractAsync, sessionId, sessionRead]);
 
-  // Outcome decryption — only enabled once reveal() has landed on-chain.
+  // Outcome decryption, only enabled once reveal() has landed on-chain.
   const dealExistsRead = useReadContract({
     address: hasContract ? deployment!.address : undefined,
     abi: hasContract ? deployment!.abi : undefined,

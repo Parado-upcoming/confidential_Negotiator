@@ -27,7 +27,7 @@ export default function Landing() {
             <span className="text-muted-foreground">Reveal nothing else.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-md text-base text-muted-foreground sm:mt-8 sm:text-lg">
-            Two people. One number each. Find out if they meet — without either one ever seeing the other&apos;s.
+            Two people. One number each. Find out if they meet, without either one ever seeing the other&apos;s.
           </p>
           <div className="mt-10 sm:mt-12">
             <button
