@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Start anvil + FHEVM cleartext host stack + FHECounter in one command.
+# Start anvil + FHEVM cleartext host stack + ConfidentialNegotiation in one command.
 #
 # Flow (2 terminals):
-#   pnpm chain   # this script — anvil + FHEVM host + FHECounter
+#   pnpm chain   # this script — anvil + FHEVM host + ConfidentialNegotiation
 #   pnpm start   # frontend
 #
-# To redeploy FHECounter without restarting anvil, run
+# To redeploy ConfidentialNegotiation without restarting anvil, run
 # `pnpm deploy:localhost` in another terminal.
 set -euo pipefail
 
@@ -64,17 +64,59 @@ done
 kill -0 "$ANVIL_PID" 2>/dev/null \
   || { echo "anvil failed to start on port $PORT (already in use?)" >&2; exit 1; }
 
-echo "deploying FHEVM cleartext host stack..."
-# Unset any chain override inherited from the calling shell — cast reads
-# CHAIN (and legacy FOUNDRY_CHAIN / DAPP_CHAIN) and would fail if set to an
-# invalid value such as "testnet".
-(unset CHAIN FOUNDRY_CHAIN DAPP_CHAIN; cd "$FORGE_FHEVM_DIR" && ./deploy-local.sh --rpc-url "$RPC_URL")
+# Redeploying the FHEVM host stack (ACL/Executor/KMSVerifier/InputVerifier) on
+# top of already-restored state resets its internal registries even though the
+# contracts land at the same fixed addresses — any input proof a client already
+# has cached (or any ciphertext handle registered under the previous instance)
+# stops verifying afterwards. Confirmed by trace: a submitFloor call reverted
+# deep inside InputVerifier.verifyInput after a chain restart that re-ran this
+# unconditionally. Only deploy when the ACL contract isn't already live.
+ACL_ADDR=0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D
+if [[ "$(cast code "$ACL_ADDR" --rpc-url "$RPC_URL")" == "0x" ]]; then
+  echo "deploying FHEVM cleartext host stack..."
+  # Unset any chain override inherited from the calling shell — cast reads
+  # CHAIN (and legacy FOUNDRY_CHAIN / DAPP_CHAIN) and would fail if set to an
+  # invalid value such as "testnet".
+  (unset CHAIN FOUNDRY_CHAIN DAPP_CHAIN; cd "$FORGE_FHEVM_DIR" && ./deploy-local.sh --rpc-url "$RPC_URL")
+else
+  echo "FHEVM host stack already live (restored from state) — skipping redeploy"
+fi
 
-echo "deploying FHECounter..."
-RPC_URL="$RPC_URL" "$SCRIPT_DIR/deploy-localhost.sh"
+# wagmi's useReadContracts batches reads via Multicall3, which is deployed at
+# this canonical address on every real network (mainnet, Sepolia, ...) but not
+# on a bare anvil instance. Without it, every multicall-based read in the
+# frontend (e.g. listing negotiations) silently fails. Deploy it once via the
+# well-known pre-signed transaction (github.com/mds1/multicall3) — idempotent,
+# and persists in --dump-state once deployed.
+MULTICALL3_ADDR=0xcA11bde05977b3631167028862bE2a173976CA11
+if [[ "$(cast code "$MULTICALL3_ADDR" --rpc-url "$RPC_URL")" == "0x" ]]; then
+  echo "deploying Multicall3..."
+  cast send 0x05f32b3cc3888453ff71b01135b34ff8e41263f2 --value 1ether \
+    --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+    --rpc-url "$RPC_URL" >/dev/null
+  cast publish "$(cat "$SCRIPT_DIR/multicall3-deploy-tx.txt")" --rpc-url "$RPC_URL" >/dev/null
+fi
+
+# If anvil state was restored, ConfidentialNegotiation (and its session data)
+# may already exist on-chain at the address from the last broadcast. Redeploying
+# unconditionally would silently orphan that data behind a fresh address on every
+# restart, so only deploy when there's no live contract at the last known address.
+LATEST_BROADCAST="$REPO_ROOT/packages/foundry/broadcast/DeployConfidentialNegotiation.s.sol/31337/run-latest.json"
+EXISTING_ADDR=""
+if [[ -f "$LATEST_BROADCAST" ]]; then
+  EXISTING_ADDR="$(jq -r '[.transactions[] | select(.contractName=="ConfidentialNegotiation" and .transactionType=="CREATE") | .contractAddress] | last // ""' "$LATEST_BROADCAST")"
+fi
+
+if [[ -n "$EXISTING_ADDR" ]] && [[ "$(cast code "$EXISTING_ADDR" --rpc-url "$RPC_URL")" != "0x" ]]; then
+  echo "ConfidentialNegotiation already live at $EXISTING_ADDR (restored from state) — skipping redeploy"
+  (cd "$REPO_ROOT" && pnpm generate)
+else
+  echo "deploying ConfidentialNegotiation..."
+  RPC_URL="$RPC_URL" "$SCRIPT_DIR/deploy-localhost.sh"
+fi
 
 echo
-echo "✓ anvil + FHEVM host + FHECounter ready on $RPC_URL (chain id 31337)"
+echo "✓ anvil + FHEVM host + ConfidentialNegotiation ready on $RPC_URL (chain id 31337)"
 echo "  next: pnpm start (in another terminal)"
 echo
 

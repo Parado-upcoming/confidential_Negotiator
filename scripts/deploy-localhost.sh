@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Deploy FHECounter to a running anvil node at 127.0.0.1:8545 and regenerate
-# the frontend's per-contract ABI/address files.
+# Deploy ConfidentialNegotiation to a running anvil node at 127.0.0.1:8545
+# and regenerate the frontend's per-contract ABI/address files.
 #
 # Prereq: `pnpm chain` is running in another terminal. That script starts
 # anvil AND materializes the FHEVM cleartext host stack at the canonical
@@ -20,7 +20,7 @@ if ! cast chain-id --rpc-url "$RPC_URL" >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "▸ Deploying FHECounter"
+echo "▸ Deploying ConfidentialNegotiation"
 cd "$FOUNDRY_DIR"
 # foundry.toml references SEPOLIA_RPC_URL / ETHERSCAN_API_KEY under
 # [rpc_endpoints] / [etherscan]. forge 1.x refuses to load the config if
@@ -32,7 +32,7 @@ export SEPOLIA_RPC_URL ETHERSCAN_API_KEY
 
 deploy_log="$(mktemp)"
 trap 'rm -f "$deploy_log"' EXIT
-if ! PRIVATE_KEY="$ANVIL_PK" forge script script/DeployFHECounter.s.sol:DeployFHECounter \
+if ! PRIVATE_KEY="$ANVIL_PK" forge script script/DeployConfidentialNegotiation.s.sol:DeployConfidentialNegotiation \
     --rpc-url "$RPC_URL" \
     --private-key "$ANVIL_PK" \
     --broadcast \
@@ -41,7 +41,7 @@ if ! PRIVATE_KEY="$ANVIL_PK" forge script script/DeployFHECounter.s.sol:DeployFH
     cat "$deploy_log" >&2
     exit 1
 fi
-grep -E "FHECounter|Owner|===" "$deploy_log" || true
+grep -E "ConfidentialNegotiation|Owner|===" "$deploy_log" || true
 
 echo
 echo "▸ Regenerating frontend ABIs + addresses"
@@ -50,4 +50,4 @@ pnpm generate
 
 echo
 echo "✅  Local dev stack ready. Frontend reads addresses from"
-echo "    packages/nextjs/contracts/FHECounter.ts (+ FHECounter.local.ts)."
+echo "    packages/nextjs/contracts/ConfidentialNegotiation.ts (+ ConfidentialNegotiation.local.ts)."
