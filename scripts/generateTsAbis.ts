@@ -231,6 +231,18 @@ function cleanStaleContractFiles(currentNames: Set<string>) {
 }
 
 async function main() {
+  // On Vercel, `packages/foundry/broadcast/` is gitignored but can still end up
+  // present in the build environment (build cache carrying over files from an
+  // earlier deploy) — reflecting whatever contract address happened to be
+  // deployed at the time that cache was populated, not the current commit.
+  // Regenerating from it there would silently overwrite the correct,
+  // committed `<Name>.ts` with a stale address. Trust the committed files
+  // as-is in that environment instead; only regenerate for local dev.
+  if (process.env.VERCEL) {
+    console.log("  on Vercel — skipping ABI regeneration, using committed contracts/*.ts as-is");
+    return;
+  }
+
   const deployments = collectDeployments();
   const contractNames = Object.keys(deployments);
 
