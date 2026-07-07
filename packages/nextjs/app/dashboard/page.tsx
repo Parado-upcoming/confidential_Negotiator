@@ -25,7 +25,7 @@ export default function Dashboard() {
 
   return (
     <AppShell>
-      <div className="animate-fade-up mt-6 sm:mt-10">
+      <div className="animate-fade-up mt-20 sm:mt-24">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your negotiations</h1>
