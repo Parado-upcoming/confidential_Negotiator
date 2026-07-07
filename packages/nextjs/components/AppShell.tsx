@@ -69,7 +69,7 @@ function AccountMenu({ address }: { address: `0x${string}` }) {
           {truncate(address)}
         </button>
         {open ? (
-          <div className="absolute right-0 top-[calc(100%+8px)] w-52 overflow-hidden rounded-2xl border border-border bg-card shadow-md">
+          <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-52 overflow-hidden rounded-2xl border border-border bg-card shadow-md">
             <button
               onClick={() => {
                 navigator.clipboard.writeText(address);
