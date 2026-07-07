@@ -113,7 +113,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5 sm:py-7">
+      <header className="sticky top-0 z-40 mx-auto flex w-full max-w-5xl items-center justify-between bg-background px-6 py-5 sm:py-7">
         <Link href="/" className="text-sm font-medium tracking-tight text-foreground/90 hover:text-foreground">
           Confidential Negotiation
         </Link>
