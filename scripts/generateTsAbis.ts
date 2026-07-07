@@ -240,6 +240,7 @@ async function main() {
   // as-is in that environment instead; only regenerate for local dev.
   if (process.env.VERCEL) {
     console.log("  on Vercel, skipping ABI regeneration, using committed contracts/*.ts as-is");
+    await ensureLocalStubs();
     return;
   }
 
