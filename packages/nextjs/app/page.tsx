@@ -24,7 +24,24 @@ export default function Landing() {
           <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-6xl sm:leading-[1.05]">
             Agree on a number.
             <br />
-            <span className="text-muted-foreground">Reveal nothing else.</span>
+            <span className="relative inline-block">
+              <span className="text-muted-foreground">Reveal nothing else.</span>
+              <svg
+                className="pointer-events-none absolute -inset-x-3 top-[100%] h-6 w-[calc(100%+1.5rem)] text-foreground sm:-inset-x-4 sm:h-8"
+                viewBox="0 0 400 32"
+                preserveAspectRatio="none"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 8 C 40 4, 60 18, 95 10 S 165 2, 200 12 S 270 20, 310 8 S 365 2, 388 10"
+                  stroke="currentColor"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
           </h1>
           <p className="mx-auto mt-6 max-w-md text-base text-muted-foreground sm:mt-8 sm:text-lg">
             Two people. One number each. Find out if they meet, without either one ever seeing the other&apos;s.
